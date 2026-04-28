@@ -1,5 +1,8 @@
 #include "CityMap.hpp"
 #include <iostream>
+#include <cmath>
+#include <vector>
+#include <string>
 
 CityMap::CityMap() {
     locations.resize(8);
@@ -49,4 +52,30 @@ void CityMap::printCity() const {
         }
         std::cout << "\n";
     }
+}
+
+std::pair<std::vector<std::string>, int> CityMap::greedyPath(int start, int end){
+
+}
+std::pair<std::vector<std::string>, int> CityMap::dijkstraPath(int start, int end){
+
+}
+std::pair<std::vector<std::string>, int> CityMap::aStarPath(int start, int end){
+
+}
+
+int CityMap::heuristic(int from, int to) const{
+    return sqrt((locations[from].x-locations[to].x)^2 + (locations[from].y-locations[to].y)^2);
+}
+
+std::vector<std::string> CityMap::reconstructPath(const std::vector<int>& prev, int start, int end) const {
+    std::vector<std::string> places;/*
+    if (locations.empty()){
+        return places;
+    }*/
+    for (int i = locations.size(); i > 0; i--){
+        places.push_back(locations[i].name);
+    }
+    return places;
+
 }
