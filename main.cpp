@@ -16,19 +16,35 @@ int main() {
     std::cout << "\n";
 
     std::cout << "--- Route: Downtown -> Airport ---\n\n";
-
+    auto herm = city.greedyPath(0, 2);
+    printResult("Greedy", herm);
+    auto dijk = city.dijkstraPath(0, 2);
+    printResult("Dijkstra", dijk);
+    auto astar = city.aStarPath(0, 2);
+    printResult("A*", astar);
     /* Test all three algorithms on this route */
 
     std::cout << "\n";
 
     std::cout << "--- Route: Downtown -> Suburb South ---\n\n";
+    auto herm = city.greedyPath(0, 7);
+    printResult("Greedy", herm);
+    auto dijk = city.dijkstraPath(0, 7);
+    printResult("Dijkstra", dijk);
+    auto astar = city.aStarPath(0, 7);
+    printResult("A*", astar);
 
     /* Test all three algorithms on this route */
 
     std::cout << "\n";
 
     std::cout << "--- Route: [Your Choice] ---\n\n";
-
+    auto herm = city.greedyPath(0, 5);
+    printResult("Greedy", herm);
+    auto dijk = city.dijkstraPath(0, 5);
+    printResult("Dijkstra", dijk);
+    auto astar = city.aStarPath(0, 5);
+    printResult("A*", astar);
     /* Pick your own start/end pair and test all three algorithms */
 
     return 0;

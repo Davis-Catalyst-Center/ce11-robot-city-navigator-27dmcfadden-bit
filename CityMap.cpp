@@ -55,7 +55,47 @@ void CityMap::printCity() const {
 }
 
 std::pair<std::vector<std::string>, int> CityMap::greedyPath(int start, int end){
+    if (start < 0 || start >= (int)locations.size() || end < 0 || end >= (int)locations.size()) {
+        return {{}, -1};
+    }
 
+    std::vector<bool> visited(locations.size(), false);
+    std::vector<int> pathIndixes;
+    pathIndixes.push_back(start);
+    int lowest = start;
+    int totalCost = 0;
+
+    while (lowest != end) {
+        visited[lowest] = true;
+        int bestNeighbor = -1;
+        int bestScore = 1000000000;
+        int bestTravelTime = 0;
+        for (const auto& neighbor : locations[lowest].neighbors) {
+            int nextIndex = neighbor.first;
+            int travelTime = neighbor.second;
+            if (visited[nextIndex]) {
+                continue;
+            }
+            int score = heuristic(nextIndex, end);
+            if (score < bestScore || (score == bestScore && travelTime < bestTravelTime)) {
+                bestScore = score;
+                bestNeighbor = nextIndex;
+                bestTravelTime = travelTime;
+            }
+        }
+        if (bestNeighbor < 0) {
+            return {{}, -1};
+        }
+        totalCost += bestTravelTime;
+        lowest = bestNeighbor;
+        pathIndixes.push_back(lowest);
+    }
+    std::vector<std::string> path;
+    path.reserve(pathIndixes.size());
+    for (int index : pathIndixes) {
+        path.push_back(locations[index].name);
+    }
+    return {path, totalCost};
 }
 std::pair<std::vector<std::string>, int> CityMap::dijkstraPath(int start, int end){
 
@@ -65,14 +105,18 @@ std::pair<std::vector<std::string>, int> CityMap::aStarPath(int start, int end){
 }
 
 int CityMap::heuristic(int from, int to) const{
-    return sqrt((locations[from].x-locations[to].x)^2 + (locations[from].y-locations[to].y)^2);
+    int dx = locations[from].x - locations[to].x;
+    int dy = locations[from].y - locations[to].y;
+    return static_cast<int>(std::sqrt(dx * dx + dy * dy));
 }
 
 std::vector<std::string> CityMap::reconstructPath(const std::vector<int>& prev, int start, int end) const {
-    std::vector<std::string> places;/*
+    std::vector<std::string> places;
+    /*
     if (locations.empty()){
         return places;
-    }*/
+    } 
+    */
     for (int i = locations.size(); i > 0; i--){
         places.push_back(locations[i].name);
     }
