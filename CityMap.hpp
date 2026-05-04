@@ -9,7 +9,7 @@ class CityMap {
 public:
     CityMap();
 
-    void printCity() const;
+    std::string printCity() const;
 
     // Returns {path, totalCost}
     // path = vector of location names from start to end

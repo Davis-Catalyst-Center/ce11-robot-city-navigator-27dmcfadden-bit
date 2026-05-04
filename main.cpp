@@ -12,7 +12,7 @@ int main() {
 
     std::cout << "=== George's City Navigation System ===\n\n";
 
-    city.printCity();
+    std::cout << city.printCity();
     std::cout << "\n";
 
     std::cout << "--- Route: Downtown -> Airport ---\n\n";

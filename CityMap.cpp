@@ -1,9 +1,9 @@
 #include "CityMap.hpp"
-#include <iostream>
 #include <cmath>
 #include <vector>
 #include <string>
 #include <queue>
+#include <sstream>
 
 CityMap::CityMap() {
     locations.resize(8);
@@ -41,18 +41,20 @@ CityMap::CityMap() {
     locations[7].neighbors = {{2, 18}, {4, 8}, {5, 14}};
 }
 
-void CityMap::printCity() const {
-    std::cout << "City Locations:\n";
+std::string CityMap::printCity() const {
+    std::ostringstream output;
+    output << "City Locations:\n";
     for (int i = 0; i < (int)locations.size(); i++) {
-        std::cout << "  [" << i << "] " << locations[i].name << "\n";
-        std::cout << "       neighbors: ";
+        output << "  [" << i << "] " << locations[i].name << "\n";
+        output << "       neighbors: ";
         for (int j = 0; j < (int)locations[i].neighbors.size(); j++) {
             auto [idx, time] = locations[i].neighbors[j];
-            std::cout << locations[idx].name << "(" << time << ")";
-            if (j < (int)locations[i].neighbors.size() - 1) std::cout << ", ";
+            output << locations[idx].name << "(" << time << ")";
+            if (j < (int)locations[i].neighbors.size() - 1) output << ", ";
         }
-        std::cout << "\n";
+        output << "\n";
     }
+    return output.str();
 }
 
 std::pair<std::vector<std::string>, int> CityMap::greedyPath(int start, int end){
@@ -63,33 +65,35 @@ std::pair<std::vector<std::string>, int> CityMap::greedyPath(int start, int end)
     std::vector<bool> visited(locations.size(), false);
     std::vector<int> pathIndixes;
     pathIndixes.push_back(start);
-    int lowest = start;
+    int current = start;
     int totalCost = 0;
 
-    while (lowest != end) {
-        visited[lowest] = true;
+    while (current != end) {
+        visited[current] = true;
         int bestNeighbor = -1;
-        int bestScore = 1000000000;
-        int bestTravelTime = 0;
-        for (const auto& neighbor : locations[lowest].neighbors) {
+        int bestTravelTime = 1000000000;
+        int bestHeuristic = 1000000000;
+        for (const auto& neighbor : locations[current].neighbors) {
             int nextIndex = neighbor.first;
             int travelTime = neighbor.second;
             if (visited[nextIndex]) {
                 continue;
             }
-            int score = heuristic(nextIndex, end);
-            if (score < bestScore || (score == bestScore && travelTime < bestTravelTime)) {
-                bestScore = score;
-                bestNeighbor = nextIndex;
+            int h = heuristic(nextIndex, end);
+            if (travelTime < bestTravelTime
+                || (travelTime == bestTravelTime && h < bestHeuristic)
+                || (travelTime == bestTravelTime && h == bestHeuristic && nextIndex < bestNeighbor)) {
                 bestTravelTime = travelTime;
+                bestNeighbor = nextIndex;
+                bestHeuristic = h;
             }
         }
         if (bestNeighbor < 0) {
             return {{}, -1};
         }
         totalCost += bestTravelTime;
-        lowest = bestNeighbor;
-        pathIndixes.push_back(lowest);
+        current = bestNeighbor;
+        pathIndixes.push_back(current);
     }
     std::vector<std::string> path;
     path.reserve(pathIndixes.size());
