@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <queue>
 
 CityMap::CityMap() {
     locations.resize(8);
@@ -98,10 +99,85 @@ std::pair<std::vector<std::string>, int> CityMap::greedyPath(int start, int end)
     return {path, totalCost};
 }
 std::pair<std::vector<std::string>, int> CityMap::dijkstraPath(int start, int end){
+    if (start < 0 || start >= (int)locations.size() || end < 0 || end >= (int)locations.size()) {
+        return {{}, -1};
+    }
 
+    using Node = std::pair<int, int>;
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
+    std::vector<int> dist(locations.size(), 1000000000);
+    std::vector<int> prev(locations.size(), -1);
+    dist[start] = 0;
+    pq.push({0, start});
+    while (!pq.empty()) {
+        auto [currentDist, current] = pq.top();
+        pq.pop();
+        if (currentDist > dist[current]) {
+            continue;
+        }
+        if (current == end) {
+            break;
+        }
+        for (const auto& neighbor : locations[current].neighbors) {
+            int nextIndex = neighbor.first;
+            int travelTime = neighbor.second;
+            int candidateDist = currentDist + travelTime;
+            if (candidateDist < dist[nextIndex]) {
+                dist[nextIndex] = candidateDist;
+                prev[nextIndex] = current;
+                pq.push({candidateDist, nextIndex});
+            }
+        }
+    }
+    if (dist[end] == 1000000000) {
+        return {{}, -1};
+    }
+    return {reconstructPath(prev, start, end), dist[end]};
 }
 std::pair<std::vector<std::string>, int> CityMap::aStarPath(int start, int end){
+    if (start < 0 || start >= (int)locations.size() || end < 0 || end >= (int)locations.size()) {
+        return {{}, -1};
+    }
 
+    using Node = std::pair<int, int>;
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
+    std::vector<int> gScore(locations.size(), 1000000000);
+    std::vector<int> prev(locations.size(), -1);
+
+    gScore[start] = 0;
+    pq.push({heuristic(start, end), start});
+
+    while (!pq.empty()) {
+        auto [currentF, current] = pq.top();
+        pq.pop();
+
+        if (current == end) {
+            break;
+        }
+
+        int currentG = gScore[current];
+        if (currentF > currentG + heuristic(current, end)) {
+            continue;
+        }
+
+        for (const auto& neighbor : locations[current].neighbors) {
+            int nextIndex = neighbor.first;
+            int travelTime = neighbor.second;
+            int tentativeG = currentG + travelTime;
+            if (tentativeG < gScore[nextIndex]) {
+                gScore[nextIndex] = tentativeG;
+                prev[nextIndex] = current;
+                int nextF = tentativeG + heuristic(nextIndex, end);
+                pq.push({nextF, nextIndex});
+            }
+        }
+    }
+
+    if (gScore[end] == 1000000000) {
+        return {{}, -1};
+    }
+
+    return {reconstructPath(prev, start, end), gScore[end]};
 }
 
 int CityMap::heuristic(int from, int to) const{
@@ -112,14 +188,28 @@ int CityMap::heuristic(int from, int to) const{
 
 std::vector<std::string> CityMap::reconstructPath(const std::vector<int>& prev, int start, int end) const {
     std::vector<std::string> places;
-    /*
-    if (locations.empty()){
+    if (start < 0 || start >= (int)locations.size() || end < 0 || end >= (int)locations.size()) {
         return places;
-    } 
-    */
-    for (int i = locations.size(); i > 0; i--){
-        places.push_back(locations[i].name);
     }
-    return places;
 
+    std::vector<int> reversedPath;
+    int current = end;
+    while (current != -1) {
+        reversedPath.push_back(current);
+        if (current == start) {
+            break;
+        }
+        current = prev[current];
+    }
+
+    if (reversedPath.empty() || reversedPath.back() != start) {
+        return places;
+    }
+
+    places.reserve(reversedPath.size());
+    for (int i = static_cast<int>(reversedPath.size()) - 1; i >= 0; --i) {
+        places.push_back(locations[reversedPath[i]].name);
+    }
+
+    return places;
 }
